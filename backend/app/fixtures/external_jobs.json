@@ -1,0 +1,116 @@
+[
+  {
+    "id": 101,
+    "company_name": "Google",
+    "title": "Software Engineer",
+    "location": "Bengaluru, India",
+    "job_type": "Full-time",
+    "platform": "LinkedIn",
+    "source": "external_api",
+    "description": "Build scalable systems that impact billions of users. Work with a diverse team of engineers to solve real world problems. Strong foundation in Python, Data Structures, Algorithms, System Design, C++, Cloud (GCP), Linux, and Communication.",
+    "required_skills": [
+      {"name": "Python", "weight": 1.2},
+      {"name": "Data Structures", "weight": 1.5},
+      {"name": "Algorithms", "weight": 1.5},
+      {"name": "System Design", "weight": 1.3},
+      {"name": "C++", "weight": 1.0},
+      {"name": "Cloud (GCP)", "weight": 1.1},
+      {"name": "Linux", "weight": 1.0},
+      {"name": "Communication", "weight": 0.8}
+    ]
+  },
+  {
+    "id": 102,
+    "company_name": "Microsoft",
+    "title": "SDE II",
+    "location": "Hyderabad, India",
+    "job_type": "Full-time",
+    "platform": "Indeed",
+    "source": "external_api",
+    "description": "Join our engineering team to build next-generation cloud products. We are looking for engineers proficient in Java, System Design, SQL, Azure, Problem Solving, C++, and Leadership.",
+    "required_skills": [
+      {"name": "Java", "weight": 1.4},
+      {"name": "System Design", "weight": 1.5},
+      {"name": "SQL", "weight": 1.2},
+      {"name": "Azure", "weight": 1.3},
+      {"name": "Problem Solving", "weight": 1.1},
+      {"name": "C++", "weight": 1.0},
+      {"name": "Leadership", "weight": 0.9}
+    ]
+  },
+  {
+    "id": 103,
+    "company_name": "Amazon",
+    "title": "Backend Developer",
+    "location": "Bengaluru, India",
+    "job_type": "Full-time",
+    "platform": "LinkedIn",
+    "source": "external_api",
+    "description": "Work on highly scalable backend services that power Amazon's global infrastructure. Requires proficiency in Python, Distributed Systems, SQL, AWS, Data Structures, Linux, and System Design.",
+    "required_skills": [
+      {"name": "Python", "weight": 1.3},
+      {"name": "Distributed Systems", "weight": 1.5},
+      {"name": "SQL", "weight": 1.2},
+      {"name": "AWS", "weight": 1.4},
+      {"name": "Data Structures", "weight": 1.2},
+      {"name": "Linux", "weight": 1.0},
+      {"name": "System Design", "weight": 1.4}
+    ]
+  },
+  {
+    "id": 104,
+    "company_name": "Meta",
+    "title": "Product Engineer",
+    "location": "Remote",
+    "job_type": "Full-time",
+    "platform": "Naukri",
+    "source": "external_api",
+    "description": "Develop high impact consumer-facing web and mobile applications using React, JavaScript, REST APIs, Python, and Git.",
+    "required_skills": [
+      {"name": "React", "weight": 1.4},
+      {"name": "JavaScript", "weight": 1.3},
+      {"name": "Python", "weight": 1.1},
+      {"name": "REST APIs", "weight": 1.2},
+      {"name": "Git", "weight": 1.0},
+      {"name": "Communication", "weight": 0.9}
+    ]
+  },
+  {
+    "id": 105,
+    "company_name": "Razorpay",
+    "title": "Full Stack Engineer",
+    "location": "Bengaluru, India",
+    "job_type": "Full-time",
+    "platform": "LinkedIn",
+    "source": "external_api",
+    "description": "Architect robust payment flows and merchant dashboards. Requires JavaScript, TypeScript, React, Node.js, SQL, Docker, and Microservices.",
+    "required_skills": [
+      {"name": "JavaScript", "weight": 1.2},
+      {"name": "TypeScript", "weight": 1.3},
+      {"name": "React", "weight": 1.3},
+      {"name": "Node.js", "weight": 1.4},
+      {"name": "SQL", "weight": 1.2},
+      {"name": "Docker", "weight": 1.1},
+      {"name": "Microservices", "weight": 1.3}
+    ]
+  },
+  {
+    "id": 106,
+    "company_name": "NVIDIA",
+    "title": "AI Platform Engineer",
+    "location": "Pune, India",
+    "job_type": "Full-time",
+    "platform": "Indeed",
+    "source": "external_api",
+    "description": "Accelerate machine learning pipelines and deep learning training on GPU clusters. Requires Python, PyTorch, C++, Linux, Docker, Machine Learning, and Algorithms.",
+    "required_skills": [
+      {"name": "Python", "weight": 1.4},
+      {"name": "PyTorch", "weight": 1.5},
+      {"name": "C++", "weight": 1.3},
+      {"name": "Linux", "weight": 1.1},
+      {"name": "Docker", "weight": 1.1},
+      {"name": "Machine Learning", "weight": 1.5},
+      {"name": "Algorithms", "weight": 1.2}
+    ]
+  }
+]
