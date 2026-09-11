@@ -118,9 +118,9 @@ def seed_database():
         
         inst = Institution(
             user_id=dean.id,
-            name="MIT College of Engineering",
-            code="MIT-ENG-2026",
-            location="Pune, Maharashtra"
+            name="Walchand College of Engineering",
+            code="WCE-SANGLI-2026",
+            location="Sangli, Maharashtra"
         )
         db.add(inst)
         db.commit()
@@ -152,7 +152,115 @@ def seed_database():
         db.commit()
         print("✓ Demo institution & student cohort seeded")
 
-    # 5. Sync External & Internal Jobs
+    # 5. Seed Standard Demo Users for Instant Role Demo:
+    # student@demo.com, industry@demo.com, institution@demo.com (Password: password123)
+    
+    # 5a. student@demo.com
+    std_demo = db.query(User).filter(User.email == "student@demo.com").first()
+    if not std_demo:
+        std_demo = User(
+            name="Alex Turner",
+            email="student@demo.com",
+            password_hash=get_password_hash("password123"),
+            role="student"
+        )
+        db.add(std_demo)
+        db.commit()
+        db.refresh(std_demo)
+        
+        std_profile = StudentProfile(
+            user_id=std_demo.id,
+            target_role="Full Stack Engineer",
+            headline="Full Stack Developer & Cloud Enthusiast",
+            bio="Motivated engineering student skilled in modern web stacks, distributed systems, and cloud infrastructure.",
+            cv_url="uploads/cv_alex.pdf",
+            education=[{"degree": "B.Tech Information Technology", "institution": "Apex Institute of Technology", "year": "2026", "score": "9.1 CGPA"}],
+            experience=[{"role": "Full Stack Intern", "company": "Nexlify Tech", "duration": "4 months", "description": "Built reactive UIs with React and high-speed services using FastAPI."}],
+            projects=[{"title": "Distributed Task Queue", "tech_stack": "Python, Redis, Docker", "description": "Asynchronous job scheduler handling 10k tasks/sec."}]
+        )
+        db.add(std_profile)
+        
+        demo_skills_present = ["Python", "JavaScript", "React", "SQL", "Data Structures", "Algorithms", "Git", "FastAPI", "Linux"]
+        demo_skills_suggested = ["Docker", "Kubernetes", "AWS", "System Design", "Microservices"]
+        demo_skills_verified = ["Python", "React", "SQL"]
+        
+        for name in demo_skills_present:
+            s_obj = all_skills_map.get(name.lower())
+            if s_obj:
+                st = "verified" if name in demo_skills_verified else "present"
+                db.add(UserSkill(user_id=std_demo.id, skill_id=s_obj.id, status=st, source="cv_extracted"))
+                if st == "verified":
+                    db.add(TestAttempt(user_id=std_demo.id, skill_id=s_obj.id, score=92.0, passed=True, verified_at=datetime.now(timezone.utc)))
+                    
+        for name in demo_skills_suggested:
+            s_obj = all_skills_map.get(name.lower())
+            if s_obj:
+                db.add(UserSkill(user_id=std_demo.id, skill_id=s_obj.id, status="suggested", source="cv_extracted"))
+                
+        # Also enroll in institution batch if institution exists
+        mit_inst = db.query(Institution).first()
+        if mit_inst:
+            db.add(InstitutionStudent(institution_id=mit_inst.id, student_id=std_demo.id, batch="2026-CSE-A"))
+            
+        db.commit()
+        print("✓ Demo student (student@demo.com) seeded")
+
+    # 5b. industry@demo.com
+    ind_demo = db.query(User).filter(User.email == "industry@demo.com").first()
+    if not ind_demo:
+        ind_demo = User(
+            name="Elena Rostova",
+            email="industry@demo.com",
+            password_hash=get_password_hash("password123"),
+            role="industry"
+        )
+        db.add(ind_demo)
+        db.commit()
+        db.refresh(ind_demo)
+        
+        comp_demo = Company(
+            user_id=ind_demo.id,
+            name="Nexlify Technologies",
+            description="Next-generation cloud computing and artificial intelligence solutions.",
+            location="Bengaluru, India",
+            website="https://nexlify.tech"
+        )
+        db.add(comp_demo)
+        db.commit()
+        print("✓ Demo industry employer (industry@demo.com) seeded")
+
+    # 5c. institution@demo.com
+    ins_demo = db.query(User).filter(User.email == "institution@demo.com").first()
+    if not ins_demo:
+        ins_demo = User(
+            name="Prof. David K.",
+            email="institution@demo.com",
+            password_hash=get_password_hash("password123"),
+            role="institution"
+        )
+        db.add(ins_demo)
+        db.commit()
+        db.refresh(ins_demo)
+        
+        apex_inst = Institution(
+            user_id=ins_demo.id,
+            name="Walchand College of Engineering",
+            code="WCE-SANGLI-2026",
+            location="Sangli, Maharashtra"
+        )
+        db.add(apex_inst)
+        db.commit()
+        db.refresh(apex_inst)
+        
+        if std_demo:
+            db.add(InstitutionStudent(institution_id=apex_inst.id, student_id=std_demo.id, batch="2026-CSE-A"))
+        if pavitra:
+            db.add(InstitutionStudent(institution_id=apex_inst.id, student_id=pavitra.id, batch="2026-CSE-A"))
+            
+        db.commit()
+        print("✓ Demo institution dean (institution@demo.com) seeded")
+
+    # 6. Sync External & Internal Jobs
     sync_external_jobs_to_db(db)
     print("✓ External & internal jobs synced")
     

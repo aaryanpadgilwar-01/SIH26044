@@ -112,5 +112,176 @@
       {"name": "Machine Learning", "weight": 1.5},
       {"name": "Algorithms", "weight": 1.2}
     ]
+  },
+  {
+    "id": 107,
+    "company_name": "Zerodha",
+    "title": "Systems Software Intern",
+    "location": "Bengaluru, India",
+    "job_type": "Internship",
+    "platform": "SkillMatrix",
+    "source": "external_api",
+    "description": "Work on high-throughput trading systems and real-time order execution engines. Ideal for candidates with deep knowledge of Go, Python, Linux, PostgreSQL, and Data Structures.",
+    "required_skills": [
+      {"name": "Python", "weight": 1.3},
+      {"name": "Go", "weight": 1.4},
+      {"name": "Linux", "weight": 1.2},
+      {"name": "PostgreSQL", "weight": 1.3},
+      {"name": "Data Structures", "weight": 1.4}
+    ]
+  },
+  {
+    "id": 108,
+    "company_name": "Swiggy",
+    "title": "Backend SDE Intern",
+    "location": "Bengaluru, India",
+    "job_type": "Internship",
+    "platform": "LinkedIn",
+    "source": "external_api",
+    "description": "Help develop hyper-local delivery logistics algorithms and microservices. Proficiency in Java, Spring Boot, MySQL, Redis, and Git required.",
+    "required_skills": [
+      {"name": "Java", "weight": 1.4},
+      {"name": "Spring Boot", "weight": 1.3},
+      {"name": "MySQL", "weight": 1.2},
+      {"name": "Redis", "weight": 1.2},
+      {"name": "Git", "weight": 1.0}
+    ]
+  },
+  {
+    "id": 109,
+    "company_name": "Flipkart",
+    "title": "Data Platform Engineer",
+    "location": "Bengaluru, India",
+    "job_type": "Full-time",
+    "platform": "Naukri",
+    "source": "external_api",
+    "description": "Process and analyze billions of daily ecommerce events. Hands-on experience with Python, Distributed Systems, SQL, Docker, and Kubernetes.",
+    "required_skills": [
+      {"name": "Python", "weight": 1.3},
+      {"name": "Distributed Systems", "weight": 1.5},
+      {"name": "SQL", "weight": 1.2},
+      {"name": "Docker", "weight": 1.2},
+      {"name": "Kubernetes", "weight": 1.3}
+    ]
+  },
+  {
+    "id": 110,
+    "company_name": "Adobe",
+    "title": "Machine Learning Engineer",
+    "location": "Remote",
+    "job_type": "Full-time",
+    "platform": "Indeed",
+    "source": "external_api",
+    "description": "Develop cutting-edge generative AI and creative tools. Requires deep expertise in Python, PyTorch, Deep Learning, NLP, and Computer Networks.",
+    "required_skills": [
+      {"name": "Python", "weight": 1.4},
+      {"name": "PyTorch", "weight": 1.5},
+      {"name": "Deep Learning", "weight": 1.4},
+      {"name": "NLP", "weight": 1.3},
+      {"name": "Machine Learning", "weight": 1.4}
+    ]
+  },
+  {
+    "id": 111,
+    "company_name": "Infosys",
+    "title": "Graduate Cloud Trainee",
+    "location": "Pune, India",
+    "job_type": "Full-time",
+    "platform": "Naukri",
+    "source": "external_api",
+    "description": "Join our global cloud transformation program. Training in AWS, Azure, Linux, Object Oriented Programming, and Teamwork provided.",
+    "required_skills": [
+      {"name": "AWS", "weight": 1.2},
+      {"name": "Azure", "weight": 1.2},
+      {"name": "Linux", "weight": 1.1},
+      {"name": "Object Oriented Programming", "weight": 1.2},
+      {"name": "Teamwork", "weight": 0.9}
+    ]
+  },
+  {
+    "id": 112,
+    "company_name": "CRED",
+    "title": "Frontend Software Engineer",
+    "location": "Bengaluru, India",
+    "job_type": "Full-time",
+    "platform": "SkillMatrix",
+    "source": "external_api",
+    "description": "Design delightful high-performance financial experiences. Requires React, TypeScript, JavaScript, REST APIs, and Problem Solving.",
+    "required_skills": [
+      {"name": "React", "weight": 1.4},
+      {"name": "TypeScript", "weight": 1.3},
+      {"name": "JavaScript", "weight": 1.3},
+      {"name": "REST APIs", "weight": 1.2},
+      {"name": "Problem Solving", "weight": 1.1}
+    ]
+  },
+  {
+    "id": 113,
+    "company_name": "TCS",
+    "title": "Digital Technology Associate",
+    "location": "Hyderabad, India",
+    "job_type": "Full-time",
+    "platform": "Naukri",
+    "source": "external_api",
+    "description": "Build modern enterprise solutions with Java, Python, SQL, Git, and Communication skills.",
+    "required_skills": [
+      {"name": "Java", "weight": 1.3},
+      {"name": "Python", "weight": 1.2},
+      {"name": "SQL", "weight": 1.2},
+      {"name": "Git", "weight": 1.0},
+      {"name": "Communication", "weight": 1.0}
+    ]
+  },
+  {
+    "id": 114,
+    "company_name": "Goldman Sachs",
+    "title": "Quantitative Developer Intern",
+    "location": "Hyderabad, India",
+    "job_type": "Internship",
+    "platform": "LinkedIn",
+    "source": "external_api",
+    "description": "Apply algorithmic problem solving to risk analytics. Requires C++, Python, Algorithms, Data Structures, and Critical Thinking.",
+    "required_skills": [
+      {"name": "C++", "weight": 1.4},
+      {"name": "Python", "weight": 1.3},
+      {"name": "Algorithms", "weight": 1.5},
+      {"name": "Data Structures", "weight": 1.4},
+      {"name": "Critical Thinking", "weight": 1.1}
+    ]
+  },
+  {
+    "id": 115,
+    "company_name": "Postman",
+    "title": "API Platform Engineer",
+    "location": "Remote",
+    "job_type": "Full-time",
+    "platform": "LinkedIn",
+    "source": "external_api",
+    "description": "Empower millions of API developers worldwide. Needs Node.js, FastAPI, REST APIs, Docker, CI/CD, and Microservices.",
+    "required_skills": [
+      {"name": "Node.js", "weight": 1.3},
+      {"name": "FastAPI", "weight": 1.3},
+      {"name": "REST APIs", "weight": 1.4},
+      {"name": "Docker", "weight": 1.2},
+      {"name": "CI/CD", "weight": 1.2},
+      {"name": "Microservices", "weight": 1.3}
+    ]
+  },
+  {
+    "id": 116,
+    "company_name": "Atlassian",
+    "title": "DevOps & Cloud Engineer",
+    "location": "Bengaluru, India",
+    "job_type": "Full-time",
+    "platform": "Indeed",
+    "source": "external_api",
+    "description": "Maintain reliability and continuous delivery pipelines across distributed cloud services using AWS, Docker, Kubernetes, CI/CD, and Linux.",
+    "required_skills": [
+      {"name": "AWS", "weight": 1.4},
+      {"name": "Kubernetes", "weight": 1.4},
+      {"name": "Docker", "weight": 1.2},
+      {"name": "CI/CD", "weight": 1.3},
+      {"name": "Linux", "weight": 1.2}
+    ]
   }
 ]

@@ -3,12 +3,12 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from backend.app.core.database import get_db
-from backend.app.core.deps import get_current_user
+from backend.app.core.deps import get_current_user, require_student
 from backend.app.models.models import User, Job, Application, JobRequiredSkill, Skill
 from backend.app.schemas.job import JobResponse, ApplicationResponse, ApplicationCreate
 from backend.app.services.matching_engine import get_jobs_for_student, compute_match_score
 
-router = APIRouter(prefix="/jobs", tags=["jobs"])
+router = APIRouter(prefix="/jobs", tags=["jobs"], dependencies=[Depends(require_student)])
 
 @router.get("/recommended", response_model=List[JobResponse])
 def get_recommended_jobs(

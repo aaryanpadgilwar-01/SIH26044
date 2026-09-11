@@ -59,9 +59,15 @@ All demo accounts use the password: `password123`
 
 | Role | Name | Email | Default Dashboard |
 |---|---|---|---|
-| **Student** | Pavitra S | `pavitra@skillmatrix.edu` | Student Dashboard (Full match with reference UI) |
-| **Industry** | Sarah Chen (Google) | `recruiter@google.com` | Industry Portal & Candidate Pipeline |
-| **Institution** | Dr. Rajesh Sharma (MIT) | `dean@mit.edu` | Dean's Institution Analytics & Skill Gap Matrix |
+| **Student (Standard Demo)** | Alex Turner | `student@demo.com` | Student Dashboard & Real-Time Job Matching |
+| **Industry (Standard Demo)** | Elena Rostova (Nexlify) | `industry@demo.com` | Industry Portal & Candidate Pipeline |
+| **Institution (Standard Demo)** | Prof. David K. (Apex Tech) | `institution@demo.com` | Dean's Institution Analytics & Skill Gap Matrix |
+| **Student (Original Profile)** | Pavitra S | `pavitra@skillmatrix.edu` | Student Dashboard (Full match with reference UI) |
+| **Industry (Google Recruiter)**| Sarah Chen (Google) | `recruiter@google.com` | Industry Portal & Candidate Pipeline |
+| **Institution (MIT Dean)** | Dr. Rajesh Sharma (MIT) | `dean@mit.edu` | Dean's Institution Analytics & Skill Gap Matrix |
+
+> [!TIP]
+> The login landing page includes **1-Click Quick Demo Login** buttons for Student, Industry, and Institution roles so you can switch and test roles instantly without typing credentials!
 
 ---
 

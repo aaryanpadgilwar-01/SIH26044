@@ -22,6 +22,8 @@ class Token(BaseModel):
     name: str
     email: str
     role: str
+    institution_name: Optional[str] = None
+    company_name: Optional[str] = None
 
 class UserResponse(BaseModel):
     id: int

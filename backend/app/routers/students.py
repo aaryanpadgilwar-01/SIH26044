@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
 from sqlalchemy.orm import Session
 from backend.app.core.config import settings
 from backend.app.core.database import get_db
-from backend.app.core.deps import get_current_user, require_role
+from backend.app.core.deps import get_current_user, require_role, require_student
 from backend.app.models.models import User, StudentProfile, Skill, UserSkill, Job
 from backend.app.schemas.student import (
     StudentProfileUpdate, StudentProfileResponse, CVUploadResponse, StudentDashboardSummary
@@ -16,7 +16,7 @@ from backend.app.schemas.skill import (
 from backend.app.services.cv_service import process_student_cv
 from backend.app.services.test_service import get_or_create_skill_test, grade_skill_test
 
-router = APIRouter(prefix="/students", tags=["students"])
+router = APIRouter(prefix="/students", tags=["students"], dependencies=[Depends(require_student)])
 
 @router.get("/dashboard-summary", response_model=StudentDashboardSummary)
 def get_dashboard_summary(
@@ -26,7 +26,11 @@ def get_dashboard_summary(
     profile = current_user.student_profile
     target_role = profile.target_role if profile and profile.target_role else "Software Engineer"
     
-    user_skills = db.query(UserSkill).filter(UserSkill.user_id == current_user.id).all()
+    # Query technical skills only (excluding Soft Skills category for current phase)
+    user_skills = db.query(UserSkill).join(Skill).filter(
+        UserSkill.user_id == current_user.id,
+        Skill.category != "Soft Skills"
+    ).all()
     
     present_skills = [us for us in user_skills if us.status in ["present", "verified"]]
     suggested_skills = [us for us in user_skills if us.status == "suggested"]
@@ -101,7 +105,10 @@ def get_student_skills(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    user_skills = db.query(UserSkill).filter(UserSkill.user_id == current_user.id).all()
+    user_skills = db.query(UserSkill).join(Skill).filter(
+        UserSkill.user_id == current_user.id,
+        Skill.category != "Soft Skills"
+    ).all()
     return [
         UserSkillItem(
             skill_id=us.skill_id,

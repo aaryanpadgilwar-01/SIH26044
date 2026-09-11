@@ -3,13 +3,36 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from backend.app.core.database import get_db
-from backend.app.core.deps import get_current_user
+from backend.app.core.deps import get_current_user, require_institution
 from backend.app.models.models import (
     User, Institution, InstitutionStudent, UserSkill, Skill, Job, JobRequiredSkill
 )
 from backend.app.schemas.institution import BatchStatsResponse, SkillGapItem, StudentRosterItem
 
-router = APIRouter(prefix="/institutions", tags=["institutions"])
+router = APIRouter(prefix="/institutions", tags=["institutions"], dependencies=[Depends(require_institution)])
+
+@router.get("/profile")
+def get_institution_profile(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    inst = current_user.institution
+    if not inst:
+        inst = Institution(
+            user_id=current_user.id,
+            name="Walchand College of Engineering",
+            code="WCE-SANGLI-2026",
+            location="Sangli, Maharashtra"
+        )
+        db.add(inst)
+        db.commit()
+        db.refresh(inst)
+    return {
+        "id": inst.id,
+        "name": inst.name,
+        "code": inst.code,
+        "location": inst.location
+    }
 
 @router.get("/batches")
 def get_batches(
@@ -92,18 +115,21 @@ def get_batch_gap_analysis(
     job_reqs = db.query(JobRequiredSkill).all()
     demand_counts = Counter([jr.skill_id for jr in job_reqs])
     
-    # Compute batch competency (% of students who verified the skill)
-    student_skills = db.query(UserSkill).filter(
+    # Compute verified students per skill in active cohort
+    verified_student_skills = db.query(UserSkill).filter(
         UserSkill.user_id.in_(student_ids),
-        UserSkill.status.in_(["verified", "present"])
+        UserSkill.status == "verified"
     ).all()
-    student_skill_counts = Counter([us.skill_id for us in student_skills])
+    skill_verified_users = {}
+    for us in verified_student_skills:
+        skill_verified_users.setdefault(us.skill_id, set()).add(us.user_id)
     
-    # Top 8 most in-demand skills
-    top_skill_ids = [sid for sid, _ in demand_counts.most_common(8)]
+    # Top 10 key technical skills (excluding Soft Skills category)
+    tech_skills = db.query(Skill).filter(Skill.category != "Soft Skills").all()
+    tech_skill_ids = {s.id for s in tech_skills}
+    top_skill_ids = [sid for sid, _ in demand_counts.most_common(25) if sid in tech_skill_ids][:10]
     if not top_skill_ids:
-        all_skills = db.query(Skill).limit(8).all()
-        top_skill_ids = [s.id for s in all_skills]
+        top_skill_ids = [s.id for s in tech_skills[:10]]
         
     gap_items = []
     for sid in top_skill_ids:
@@ -111,30 +137,34 @@ def get_batch_gap_analysis(
         if not skill:
             continue
             
+        verified_count = len(skill_verified_users.get(sid, set()))
+        coverage_pct = round((verified_count / total_students) * 100, 1)
+        
+        if coverage_pct < 30.0:
+            status_desc = "Low Coverage"
+        elif coverage_pct <= 70.0:
+            status_desc = "Moderate Coverage"
+        else:
+            status_desc = "Strong Coverage"
+            
         req_freq = demand_counts.get(sid, 2)
         ind_demand_pct = min(98, max(20, int((req_freq / total_jobs) * 100)))
-        
-        has_count = student_skill_counts.get(sid, 0)
-        batch_comp_pct = min(100, int((has_count / total_students) * 100))
-        
-        gap = max(0, ind_demand_pct - batch_comp_pct)
-        if gap >= 35:
-            status_desc = "Critical Gap"
-        elif gap >= 15:
-            status_desc = "Moderate Gap"
-        else:
-            status_desc = "Well Covered"
+        gap = max(0, ind_demand_pct - int(round(coverage_pct)))
             
         gap_items.append(SkillGapItem(
             skill_name=skill.name,
             category=skill.category,
+            verified_students_count=verified_count,
+            total_students=total_students,
+            coverage_percentage=coverage_pct,
             industry_demand_percentage=ind_demand_pct,
-            batch_competency_percentage=batch_comp_pct,
+            batch_competency_percentage=int(round(coverage_pct)),
             gap_percentage=gap,
             status=status_desc
         ))
         
-    gap_items.sort(key=lambda x: x.gap_percentage, reverse=True)
+    # Sort skills by verified ratio ascending by default (fewest verified students first)
+    gap_items.sort(key=lambda x: (x.verified_students_count, x.coverage_percentage))
     return gap_items
 
 @router.get("/batches/{batch}/roster", response_model=List[StudentRosterItem])

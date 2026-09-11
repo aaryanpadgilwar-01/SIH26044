@@ -11,12 +11,18 @@ def compute_match_score(
     """
     Computes a match score (0-100%) using cosine similarity and weighted scoring.
     Verified skills give a high-confidence bonus.
+    Soft skills are excluded at the display/query level.
     """
-    if not job_required_skills:
+    # Exclude soft skills for technical matching
+    effective_reqs = [req for req in job_required_skills if not (req.skill and req.skill.category == "Soft Skills")]
+    if not effective_reqs and job_required_skills:
+        effective_reqs = job_required_skills
+
+    if not effective_reqs:
         return 100, []
 
-    all_skill_ids = [req.skill_id for req in job_required_skills]
-    weights = [req.importance_weight for req in job_required_skills]
+    all_skill_ids = [req.skill_id for req in effective_reqs]
+    weights = [req.importance_weight for req in effective_reqs]
     
     # Vectors
     v_job = np.array(weights, dtype=float)
@@ -26,7 +32,7 @@ def compute_match_score(
     matched_weight = 0.0
     total_weight = sum(weights)
 
-    for idx, req in enumerate(job_required_skills):
+    for idx, req in enumerate(effective_reqs):
         sid = req.skill_id
         status = student_skill_dict.get(sid, "missing")
         is_present = False
@@ -71,8 +77,11 @@ def get_jobs_for_student(db: Session, student_id: int, query: str = None, locati
     """
     Ranks all available jobs for a student according to the matching engine.
     """
-    # Fetch student's skills
-    user_skills = db.query(UserSkill).filter(UserSkill.user_id == student_id).all()
+    # Fetch student's technical skills (excluding Soft Skills category)
+    user_skills = db.query(UserSkill).join(Skill).filter(
+        UserSkill.user_id == student_id,
+        Skill.category != "Soft Skills"
+    ).all()
     student_skill_dict = {us.skill_id: us.status for us in user_skills if us.status in ["present", "verified"]}
     
     # Query jobs

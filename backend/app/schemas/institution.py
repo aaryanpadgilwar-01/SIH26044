@@ -12,10 +12,13 @@ class BatchStatsResponse(BaseModel):
 class SkillGapItem(BaseModel):
     skill_name: str
     category: str
-    industry_demand_percentage: int
-    batch_competency_percentage: int
-    gap_percentage: int
-    status: str  # Critical Gap, Moderate Gap, Well Covered
+    verified_students_count: int = 0
+    total_students: int = 0
+    coverage_percentage: float = 0.0
+    industry_demand_percentage: Optional[int] = 0
+    batch_competency_percentage: Optional[int] = 0
+    gap_percentage: Optional[int] = 0
+    status: str  # Low Coverage, Moderate Coverage, Strong Coverage
 
 class StudentRosterItem(BaseModel):
     student_id: int

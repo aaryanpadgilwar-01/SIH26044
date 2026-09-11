@@ -66,18 +66,25 @@ export default function JobDetailsModal({ isOpen, onClose, job, onApply, onTestS
             Role Skill Alignment
           </h4>
           <div className="flex flex-wrap gap-1.5">
-            {job.skills && job.skills.map((skill, index) => (
-              <SkillPill
-                key={index}
-                name={skill.name}
-                status={skill.status}
-                isPresent={skill.is_present}
-                onClick={() => {
-                  onClose();
-                  if (onTestSkill) onTestSkill(skill);
-                }}
-              />
-            ))}
+            {job.skills &&
+              job.skills
+                .filter(
+                  (skill) =>
+                    skill.category !== 'Soft Skills' &&
+                    !['Communication', 'Problem Solving', 'Leadership', 'Teamwork', 'Critical Thinking'].includes(skill.name)
+                )
+                .map((skill, index) => (
+                  <SkillPill
+                    key={index}
+                    name={skill.name}
+                    status={skill.status}
+                    isPresent={skill.is_present}
+                    onClick={() => {
+                      onClose();
+                      if (onTestSkill) onTestSkill(skill);
+                    }}
+                  />
+                ))}
           </div>
           <p className="text-[11px] text-slate-500 mt-2">
             Tip: Click any missing skill pill in red to launch an instant AI skill test.

@@ -21,10 +21,27 @@ export default function InstitutionDashboard({ user }) {
   const [gapAnalysis, setGapAnalysis] = useState([]);
   const [roster, setRoster] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [institutionName, setInstitutionName] = useState(
+    user?.institution_name || user?.profile?.institution_name || 'Walchand College of Engineering'
+  );
 
   useEffect(() => {
     loadBatches();
-  }, []);
+    loadInstitutionProfile();
+  }, [user]);
+
+  const loadInstitutionProfile = async () => {
+    try {
+      const p = await api.getInstitutionProfile();
+      if (p && p.name) {
+        setInstitutionName(p.name);
+      }
+    } catch (err) {
+      if (user?.institution_name) {
+        setInstitutionName(user.institution_name);
+      }
+    }
+  };
 
   useEffect(() => {
     if (selectedBatch) {
@@ -73,7 +90,7 @@ export default function InstitutionDashboard({ user }) {
           <div>
             <div className="flex items-center space-x-2">
               <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
-                MIT College of Engineering — Dean's Portal
+                {institutionName} — Dean's Portal
               </h1>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">
                 Institutional Analytics
@@ -159,77 +176,114 @@ export default function InstitutionDashboard({ user }) {
             </div>
           </div>
 
-          {/* Skill Gap Analysis Section */}
+          {/* Skill Gap Analysis Section - Simplified Single-Metric Competency Matrix */}
           <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
               <div>
                 <h2 className="text-base font-extrabold text-slate-900">
                   Academia-Industry Skill Gap Matrix
                 </h2>
-                <p className="text-xs text-slate-500">
-                  Real-time comparison between live market demand and {selectedBatch}'s verified competencies.
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Verified student competency count across {selectedBatch} cohort ({stats?.total_students || 0} enrolled).
                 </p>
               </div>
-              <div className="flex items-center space-x-3 text-xs font-semibold text-slate-500">
+
+              {/* Coverage Ratio Threshold Legend */}
+              <div className="flex flex-wrap items-center gap-3.5 text-xs font-semibold text-slate-600 bg-slate-50 border border-slate-200/80 px-3.5 py-2 rounded-xl">
                 <div className="flex items-center space-x-1.5">
-                  <span className="w-3 h-3 rounded-xs bg-blue-600"></span>
-                  <span>Industry Job Demand</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                  <span>&lt; 30% Low Coverage</span>
                 </div>
                 <div className="flex items-center space-x-1.5">
-                  <span className="w-3 h-3 rounded-xs bg-emerald-500"></span>
-                  <span>Batch Verified Competency</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                  <span>30%–70% Moderate Coverage</span>
+                </div>
+                <div className="flex items-center space-x-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                  <span>&gt; 70% Strong Coverage</span>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4">
-              {gapAnalysis.map((item, idx) => (
-                <div key={idx} className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/60">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs font-bold text-slate-900">{item.skill_name}</span>
-                      <span className="text-[10px] font-medium text-slate-500 bg-slate-200/60 px-2 py-0.5 rounded">
-                        {item.category}
-                      </span>
-                    </div>
+            {/* Competency Rows: Sorted by X/Y ascending by default (fewest verified first), Soft Skills excluded */}
+            <div className="space-y-3.5">
+              {[...gapAnalysis]
+                .filter(
+                  (item) =>
+                    item.category !== 'Soft Skills' &&
+                    !['Communication', 'Problem Solving', 'Leadership', 'Teamwork', 'Critical Thinking'].includes(
+                      item.skill_name
+                    )
+                )
+                .sort((a, b) => {
+                  const y = stats?.total_students || 8;
+                  const countA = a.verified_students_count ?? Math.round(((a.batch_competency_percentage || 0) / 100) * y);
+                  const countB = b.verified_students_count ?? Math.round(((b.batch_competency_percentage || 0) / 100) * y);
+                  return countA - countB;
+                })
+                .map((item, idx) => {
+                  const y = item.total_students || stats?.total_students || 8;
+                  const x = item.verified_students_count !== undefined
+                    ? item.verified_students_count
+                    : Math.round(((item.batch_competency_percentage || 0) / 100) * y);
+                  const pct = item.coverage_percentage !== undefined
+                    ? Math.round(item.coverage_percentage)
+                    : Math.round((x / y) * 100);
 
-                    <span
-                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
-                        item.status === 'Critical Gap'
-                          ? 'bg-red-100 text-red-800'
-                          : item.status === 'Moderate Gap'
-                          ? 'bg-amber-100 text-amber-800'
-                          : 'bg-emerald-100 text-emerald-800'
-                      }`}
+                  // Coverage status based purely on verified student ratio
+                  let statusLabel = 'Low Coverage';
+                  let statusBadge = 'bg-rose-50 text-rose-700 border-rose-200';
+                  let fillColor = 'bg-rose-500';
+
+                  if (pct > 70) {
+                    statusLabel = 'Strong Coverage';
+                    statusBadge = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                    fillColor = 'bg-emerald-500';
+                  } else if (pct >= 30) {
+                    statusLabel = 'Moderate Coverage';
+                    statusBadge = 'bg-amber-50 text-amber-700 border-amber-200';
+                    fillColor = 'bg-amber-500';
+                  }
+
+                  return (
+                    <div
+                      key={idx}
+                      className="p-4 rounded-xl bg-slate-50/80 border border-slate-200/70 hover:border-slate-300 transition-all"
                     >
-                      {item.status} ({item.gap_percentage}% gap)
-                    </span>
-                  </div>
+                      {/* Top: Skill Name, Category, and Coverage Status Badge */}
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2.5">
+                          <span className="text-xs font-extrabold text-slate-900">{item.skill_name}</span>
+                          <span className="text-[10px] font-semibold text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded-md">
+                            {item.category}
+                          </span>
+                        </div>
 
-                  {/* Dual Bar Progress */}
-                  <div className="space-y-1.5">
-                    {/* Industry Demand Bar */}
-                    <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden flex">
-                      <div
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-700"
-                        style={{ width: `${item.industry_demand_percentage}%` }}
-                      ></div>
-                    </div>
-                    {/* Student Competency Bar */}
-                    <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden flex">
-                      <div
-                        className="bg-emerald-500 h-2 rounded-full transition-all duration-700"
-                        style={{ width: `${item.batch_competency_percentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
+                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${statusBadge}`}>
+                          {statusLabel}
+                        </span>
+                      </div>
 
-                  <div className="flex justify-between text-[10px] text-slate-500 font-medium mt-1">
-                    <span>Demand: {item.industry_demand_percentage}% of open postings</span>
-                    <span>Cohort Mastery: {item.batch_competency_percentage}% verified</span>
-                  </div>
-                </div>
-              ))}
+                      {/* Single Proportional Progress Bar (No tick marks, no second metric, no gap overlay) */}
+                      <div className="w-full bg-slate-200/70 h-3 rounded-full overflow-hidden border border-slate-200">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${fillColor}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+
+                      {/* Supporting Verification Counts (X of Y verified) and Percentage */}
+                      <div className="flex items-center justify-between text-xs text-slate-500 mt-2 px-0.5">
+                        <span className="font-semibold text-slate-700">
+                          <strong className="text-slate-900 font-bold">{x} of {y}</strong> students verified
+                        </span>
+                        <span className="font-bold text-slate-700">
+                          {pct}% batch coverage
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
             </div>
           </div>
 

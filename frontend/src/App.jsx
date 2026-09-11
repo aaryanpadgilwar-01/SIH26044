@@ -1,43 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import LeftSidebar from './components/LeftSidebar';
 import StudentDashboard from './pages/StudentDashboard';
 import IndustryDashboard from './pages/IndustryDashboard';
 import InstitutionDashboard from './pages/InstitutionDashboard';
 import ProfileModal from './components/ProfileModal';
+import AuthPage from './pages/AuthPage';
 import { api } from './services/api';
-import { Sparkles, Shield, User, Building, GraduationCap, ArrowRight } from 'lucide-react';
 
 export default function App() {
+  const [user, setUser] = useState(null);
   const [currentPortal, setCurrentPortal] = useState('student'); // 'student', 'industry', 'institution'
   const [activeTab, setActiveTab] = useState('jobs');
   const [activeSection, setActiveSection] = useState('dashboard');
-  const [user, setUser] = useState(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
 
-  // Auto-login into default demo account on mount
-  useEffect(() => {
-    switchUserForPortal(currentPortal);
-  }, [currentPortal]);
-
-  const switchUserForPortal = async (portal) => {
-    setAuthLoading(true);
-    try {
-      let email = 'pavitra@skillmatrix.edu';
-      if (portal === 'industry') {
-        email = 'recruiter@google.com';
-      } else if (portal === 'institution') {
-        email = 'dean@mit.edu';
-      }
-      const data = await api.login(email, 'password123');
-      setUser(data);
-    } catch (err) {
-      console.error('Auto login failed:', err);
-    } finally {
-      setAuthLoading(false);
-    }
+  const handleLoginSuccess = (userData) => {
+    setUser(userData);
+    const role = userData.role?.toLowerCase() || 'student';
+    setCurrentPortal(role);
+    setActiveSection('dashboard');
   };
+
+  const handleLogout = () => {
+    api.logout();
+    setUser(null);
+    setActiveSection('dashboard');
+  };
+
+  // Auth Gate: Landing on localhost shows Login/Register if not authenticated
+  if (!user) {
+    return <AuthPage onLoginSuccess={handleLoginSuccess} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col font-sans">
@@ -46,14 +40,14 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         currentPortal={currentPortal}
-        setPortal={setCurrentPortal}
         user={user}
         onOpenProfile={() => setIsProfileOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* Main Container Layout */}
       <div className="flex-1 flex max-w-7xl w-full mx-auto">
-        {/* Left Sidebar (visible in student portal or can adapt) */}
+        {/* Left Sidebar (visible in student portal) */}
         {currentPortal === 'student' && (
           <LeftSidebar
             activeSection={activeSection}
@@ -64,7 +58,13 @@ export default function App() {
 
         {/* Dynamic Portal Main Area */}
         <main className="flex-1 min-w-0 flex flex-col">
-          {currentPortal === 'student' && <StudentDashboard user={user} />}
+          {currentPortal === 'student' && (
+            <StudentDashboard
+              user={user}
+              activeSection={activeSection}
+              setActiveSection={setActiveSection}
+            />
+          )}
           {currentPortal === 'industry' && <IndustryDashboard user={user} />}
           {currentPortal === 'institution' && <InstitutionDashboard user={user} />}
         </main>
@@ -76,7 +76,7 @@ export default function App() {
         onClose={() => setIsProfileOpen(false)}
         user={user}
         onProfileUpdated={() => {
-          api.getMe().then((me) => setUser(me));
+          api.getMe().then((me) => setUser((prev) => ({ ...prev, ...me })));
         }}
       />
     </div>

@@ -3,13 +3,13 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from backend.app.core.database import get_db
-from backend.app.core.deps import get_current_user, require_role
+from backend.app.core.deps import get_current_user, require_role, require_industry
 from backend.app.models.models import User, Company, Job, JobRequiredSkill, Skill, Application
 from backend.app.schemas.industry import CompanyProfileUpdate, CompanyProfileResponse, CandidateMatchItem
 from backend.app.schemas.job import JobCreate, JobResponse
 from backend.app.services.matching_engine import get_candidates_for_job
 
-router = APIRouter(prefix="/industry", tags=["industry"])
+router = APIRouter(prefix="/industry", tags=["industry"], dependencies=[Depends(require_industry)])
 
 @router.get("/company", response_model=CompanyProfileResponse)
 def get_company_profile(

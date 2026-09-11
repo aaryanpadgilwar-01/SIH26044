@@ -14,15 +14,15 @@ import { api } from '../services/api';
 import JobCard from '../components/JobCard';
 import SkillPill from '../components/SkillPill';
 import SkillMatchDonut from '../components/SkillMatchDonut';
-import TopPlatformsCard from '../components/TopPlatformsCard';
 import CVUploadModal from '../components/CVUploadModal';
 import SkillTestModal from '../components/SkillTestModal';
 import JobDetailsModal from '../components/JobDetailsModal';
 
-export default function StudentDashboard({ user }) {
+export default function StudentDashboard({ user, activeSection = 'dashboard', setActiveSection }) {
   const [summary, setSummary] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [savedJobIds, setSavedJobIds] = useState([]);
 
   // Search and filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,7 +38,7 @@ export default function StudentDashboard({ user }) {
 
   useEffect(() => {
     loadDashboardData();
-  }, []);
+  }, [user]);
 
   const loadDashboardData = async () => {
     setLoading(true);
@@ -53,12 +53,18 @@ export default function StudentDashboard({ user }) {
         }),
       ]);
       setSummary(sumData);
-      setJobs(jobsData);
+      setJobs(jobsData || []);
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleToggleSave = (job) => {
+    setSavedJobIds((prev) =>
+      prev.includes(job.id) ? prev.filter((id) => id !== job.id) : [...prev, job.id]
+    );
   };
 
   const handleFilterChange = async (type, value) => {
@@ -117,22 +123,24 @@ export default function StudentDashboard({ user }) {
     loadDashboardData();
   };
 
-  // Extract skills for the right panel
-  const allSkills = summary?.skills || [
-    { name: 'Python', status: 'verified' },
-    { name: 'Java', status: 'present' },
-    { name: 'SQL', status: 'verified' },
-    { name: 'Data Structures', status: 'present' },
-    { name: 'Algorithms', status: 'present' },
-    { name: 'System Design', status: 'suggested' },
-    { name: 'Cloud (AWS/GCP)', status: 'suggested' },
-    { name: 'Linux', status: 'present' },
-    { name: 'Docker', status: 'suggested' },
-    { name: 'Problem Solving', status: 'present' },
-    { name: 'Machine Learning', status: 'suggested' },
-    { name: 'Communication', status: 'suggested' },
-    { name: 'Git', status: 'present' },
-  ];
+  // Extract technical skills only for the right panel (Soft skills excluded for this phase)
+  const allSkills = (summary?.skills || [
+    { name: 'Python', status: 'verified', category: 'Programming Languages' },
+    { name: 'Java', status: 'present', category: 'Programming Languages' },
+    { name: 'SQL', status: 'verified', category: 'Databases' },
+    { name: 'Data Structures', status: 'present', category: 'Core CS' },
+    { name: 'Algorithms', status: 'present', category: 'Core CS' },
+    { name: 'System Design', status: 'suggested', category: 'Core CS' },
+    { name: 'Cloud (AWS/GCP)', status: 'suggested', category: 'Cloud & DevOps' },
+    { name: 'Linux', status: 'present', category: 'Tools & OS' },
+    { name: 'Docker', status: 'suggested', category: 'Cloud & DevOps' },
+    { name: 'Machine Learning', status: 'suggested', category: 'AI/ML' },
+    { name: 'Git', status: 'present', category: 'Tools & OS' },
+  ]).filter(
+    (s) =>
+      s.category !== 'Soft Skills' &&
+      !['Communication', 'Problem Solving', 'Leadership', 'Teamwork', 'Critical Thinking'].includes(s.name)
+  );
 
   return (
     <div className="flex-1 min-w-0 flex flex-col lg:flex-row gap-6 p-6">
@@ -228,64 +236,128 @@ export default function StudentDashboard({ user }) {
           </div>
         </div>
 
-        {/* Jobs for You Section Header */}
-        <div className="flex items-center justify-between pt-1">
-          <div className="flex items-center space-x-3">
-            <h2 className="text-base font-extrabold text-slate-900 tracking-tight">Jobs for You</h2>
-            <span className="text-xs font-semibold text-slate-500">
-              {jobs.length > 0 ? `${jobs.length * 52} jobs found` : '312 jobs found'}
-            </span>
-          </div>
+        {/* Dynamic Section Header & Sorting */}
+        {(() => {
+          let displayedJobs = [...jobs];
+          if (activeSection === 'saved-jobs') {
+            displayedJobs = displayedJobs.filter((j) => savedJobIds.includes(j.id));
+          } else if (activeSection === 'applications') {
+            displayedJobs = displayedJobs.filter((j) => j.has_applied);
+          }
 
-          <div className="relative">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="appearance-none bg-white border border-slate-200 hover:border-slate-300 text-xs font-bold text-slate-700 py-1.5 pl-3 pr-7 rounded-xl cursor-pointer focus:outline-none shadow-2xs"
-            >
-              <option>Most Relevant</option>
-              <option>Highest Match</option>
-              <option>Newest First</option>
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-        </div>
+          if (sortBy === 'Highest Match') {
+            displayedJobs.sort((a, b) => (b.match_score || 0) - (a.match_score || 0));
+          } else if (sortBy === 'Newest First') {
+            displayedJobs.sort((a, b) => new Date(b.posted_at || 0) - new Date(a.posted_at || 0));
+          }
 
-        {/* Job Cards Feed */}
-        {loading ? (
-          <div className="py-16 flex flex-col items-center justify-center space-y-3">
-            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-            <p className="text-xs font-semibold text-slate-500">Vectorizing skills and matching jobs...</p>
-          </div>
-        ) : jobs.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-            <p className="text-sm font-semibold text-slate-700">No jobs match your filter criteria.</p>
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setLocationFilter('All Locations');
-                setJobTypeFilter('All Job Types');
-                setPlatformFilter('All Platforms');
-                loadDashboardData();
-              }}
-              className="mt-3 px-4 py-1.5 text-xs font-bold text-blue-600 hover:underline"
-            >
-              Reset Filters
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {jobs.map((job) => (
-              <JobCard
-                key={job.id}
-                job={job}
-                onApply={handleApply}
-                onViewDetails={(j) => setSelectedJob(j)}
-                onTestSkill={(skill) => setTestSkill(skill)}
-              />
-            ))}
-          </div>
-        )}
+          const sectionTitle =
+            activeSection === 'saved-jobs'
+              ? 'Saved Jobs'
+              : activeSection === 'applications'
+              ? 'My Applications'
+              : 'Jobs for You';
+
+          const countLabel =
+            activeSection === 'saved-jobs'
+              ? `${displayedJobs.length} jobs saved`
+              : activeSection === 'applications'
+              ? `${displayedJobs.length} applications submitted`
+              : `${displayedJobs.length} jobs matched`;
+
+          return (
+            <>
+              <div className="flex items-center justify-between pt-1">
+                <div className="flex items-center space-x-3">
+                  <h2 className="text-base font-extrabold text-slate-900 tracking-tight">{sectionTitle}</h2>
+                  <span className="text-xs font-semibold text-slate-500">{countLabel}</span>
+                </div>
+
+                <div className="relative">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="appearance-none bg-white border border-slate-200 hover:border-slate-300 text-xs font-bold text-slate-700 py-1.5 pl-3 pr-7 rounded-xl cursor-pointer focus:outline-none shadow-2xs"
+                  >
+                    <option>Most Relevant</option>
+                    <option>Highest Match</option>
+                    <option>Newest First</option>
+                  </select>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Job Cards Feed */}
+              {loading ? (
+                <div className="py-16 flex flex-col items-center justify-center space-y-3">
+                  <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                  <p className="text-xs font-semibold text-slate-500">Vectorizing skills and matching jobs...</p>
+                </div>
+              ) : displayedJobs.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+                  {activeSection === 'saved-jobs' ? (
+                    <>
+                      <p className="text-sm font-semibold text-slate-700">No saved jobs yet.</p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Click the bookmark icon on any job card to save it for quick review.
+                      </p>
+                      {setActiveSection && (
+                        <button
+                          onClick={() => setActiveSection('dashboard')}
+                          className="mt-4 px-4 py-2 text-xs font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors shadow-xs"
+                        >
+                          Explore Recommended Jobs
+                        </button>
+                      )}
+                    </>
+                  ) : activeSection === 'applications' ? (
+                    <>
+                      <p className="text-sm font-semibold text-slate-700">You haven't submitted any applications yet.</p>
+                      {setActiveSection && (
+                        <button
+                          onClick={() => setActiveSection('dashboard')}
+                          className="mt-4 px-4 py-2 text-xs font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors shadow-xs"
+                        >
+                          Browse Matched Jobs
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm font-semibold text-slate-700">No jobs match your filter criteria.</p>
+                      <button
+                        onClick={() => {
+                          setSearchQuery('');
+                          setLocationFilter('All Locations');
+                          setJobTypeFilter('All Job Types');
+                          setPlatformFilter('All Platforms');
+                          loadDashboardData();
+                        }}
+                        className="mt-3 px-4 py-1.5 text-xs font-bold text-blue-600 hover:underline"
+                      >
+                        Reset Filters
+                      </button>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {displayedJobs.map((job) => (
+                    <JobCard
+                      key={job.id}
+                      job={job}
+                      isSaved={savedJobIds.includes(job.id)}
+                      onToggleSave={handleToggleSave}
+                      onApply={handleApply}
+                      onViewDetails={(j) => setSelectedJob(j)}
+                      onTestSkill={(skill) => setTestSkill(skill)}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          );
+        })()}
       </div>
 
       {/* Right Sidebar Column */}
@@ -350,9 +422,6 @@ export default function StudentDashboard({ user }) {
           skillsToImprove={summary?.skills_to_improve_count || 5}
           otherSkills={summary?.other_skills_count || 3}
         />
-
-        {/* Card 3: Top Platforms & Quote Card */}
-        <TopPlatformsCard platforms={summary?.platform_counts} />
       </div>
 
       {/* Modals */}

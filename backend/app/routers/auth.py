@@ -59,13 +59,17 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
     db.commit()
     
     access_token = create_access_token(subject=user.id, role=user.role)
+    inst_name = user.institution.name if user.institution else None
+    comp_name = user.company.name if user.company else None
     return Token(
         access_token=access_token,
         token_type="bearer",
         user_id=user.id,
         name=user.name,
         email=user.email,
-        role=user.role
+        role=user.role,
+        institution_name=inst_name,
+        company_name=comp_name
     )
 
 @router.post("/login", response_model=Token)
@@ -79,13 +83,17 @@ def login(user_in: UserLogin, db: Session = Depends(get_db)):
         )
     
     access_token = create_access_token(subject=user.id, role=user.role)
+    inst_name = user.institution.name if user.institution else None
+    comp_name = user.company.name if user.company else None
     return Token(
         access_token=access_token,
         token_type="bearer",
         user_id=user.id,
         name=user.name,
         email=user.email,
-        role=user.role
+        role=user.role,
+        institution_name=inst_name,
+        company_name=comp_name
     )
 
 @router.get("/me")

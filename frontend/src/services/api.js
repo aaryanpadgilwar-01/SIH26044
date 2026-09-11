@@ -1,20 +1,23 @@
 const API_BASE = '/api/v1';
 
-export const getAuthToken = () => localStorage.getItem('token');
-export const setAuthToken = (token) => localStorage.getItem('token');
+// In-memory token storage (per security constraint, no localStorage)
+let memoryToken = null;
+
+export const getAuthToken = () => memoryToken;
+export const setAuthToken = (token) => {
+  memoryToken = token;
+};
 export const clearAuth = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
+  memoryToken = null;
 };
 
 export async function apiRequest(endpoint, options = {}) {
-  const token = localStorage.getItem('token');
   const headers = {
     ...(options.headers || {}),
   };
 
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  if (memoryToken) {
+    headers['Authorization'] = `Bearer ${memoryToken}`;
   }
 
   // Handle FormData vs JSON
@@ -49,8 +52,7 @@ export const api = {
       method: 'POST',
       body: { email, password },
     });
-    localStorage.setItem('token', data.access_token);
-    localStorage.setItem('user', JSON.stringify(data));
+    setAuthToken(data.access_token);
     return data;
   },
   register: async (registerData) => {
@@ -58,8 +60,7 @@ export const api = {
       method: 'POST',
       body: registerData,
     });
-    localStorage.setItem('token', data.access_token);
-    localStorage.setItem('user', JSON.stringify(data));
+    setAuthToken(data.access_token);
     return data;
   },
   getMe: () => apiRequest('/auth/me'),
@@ -132,6 +133,7 @@ export const api = {
     }),
 
   // Institution Portal
+  getInstitutionProfile: () => apiRequest('/institutions/profile'),
   getBatches: () => apiRequest('/institutions/batches'),
   getBatchStats: (batch) => apiRequest(`/institutions/batches/${encodeURIComponent(batch)}/stats`),
   getBatchGapAnalysis: (batch) => apiRequest(`/institutions/batches/${encodeURIComponent(batch)}/gap-analysis`),

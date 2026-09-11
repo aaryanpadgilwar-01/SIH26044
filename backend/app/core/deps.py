@@ -37,3 +37,7 @@ def require_role(allowed_roles: List[str]):
             )
         return current_user
     return role_checker
+
+require_student = require_role(["student"])
+require_industry = require_role(["industry"])
+require_institution = require_role(["institution"])

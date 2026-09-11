@@ -43,8 +43,7 @@ const CompanyLogo = ({ companyName }) => {
   );
 };
 
-export default function JobCard({ job, onApply, onViewDetails, onTestSkill }) {
-  const [isSaved, setIsSaved] = useState(false);
+export default function JobCard({ job, isSaved = false, onToggleSave, onApply, onViewDetails, onTestSkill }) {
   const [applying, setApplying] = useState(false);
 
   const score = job.match_score || 70;
@@ -95,8 +94,16 @@ export default function JobCard({ job, onApply, onViewDetails, onTestSkill }) {
         <div className="flex items-center space-x-2.5">
           <span className="text-xs text-slate-400 hidden sm:inline">2 days ago</span>
           <button
-            onClick={() => setIsSaved(!isSaved)}
-            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onToggleSave) onToggleSave(job);
+            }}
+            className={`p-1.5 rounded-lg transition-colors ${
+              isSaved
+                ? 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+            }`}
+            title={isSaved ? 'Remove from Saved Jobs' : 'Save Job'}
           >
             <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-blue-600 text-blue-600' : ''}`} />
           </button>
@@ -106,17 +113,24 @@ export default function JobCard({ job, onApply, onViewDetails, onTestSkill }) {
         </div>
       </div>
 
-      {/* Skill Pills Row */}
+      {/* Skill Pills Row (Technical/Hard Skills Only) */}
       <div className="flex flex-wrap gap-1.5 mt-4">
-        {job.skills && job.skills.map((skill, index) => (
-          <SkillPill
-            key={index}
-            name={skill.name}
-            status={skill.status}
-            isPresent={skill.is_present}
-            onClick={() => onTestSkill && onTestSkill(skill)}
-          />
-        ))}
+        {job.skills &&
+          job.skills
+            .filter(
+              (skill) =>
+                skill.category !== 'Soft Skills' &&
+                !['Communication', 'Problem Solving', 'Leadership', 'Teamwork', 'Critical Thinking'].includes(skill.name)
+            )
+            .map((skill, index) => (
+              <SkillPill
+                key={index}
+                name={skill.name}
+                status={skill.status}
+                isPresent={skill.is_present}
+                onClick={() => onTestSkill && onTestSkill(skill)}
+              />
+            ))}
       </div>
 
       {/* Description Excerpt */}

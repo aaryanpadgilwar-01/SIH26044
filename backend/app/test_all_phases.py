@@ -52,6 +52,29 @@ def run_tests():
     inst_token = res_inst.json()["access_token"]
     inst_headers = {"Authorization": f"Bearer {inst_token}"}
     print("✓ Phase 1: Institution JWT Auth Passed")
+
+    # Standard Demo Accounts verification (student@demo.com, industry@demo.com, institution@demo.com)
+    for demo_email, expected_role in [
+        ("student@demo.com", "student"),
+        ("industry@demo.com", "industry"),
+        ("institution@demo.com", "institution"),
+    ]:
+        res_demo = client.post("/api/v1/auth/login", json={"email": demo_email, "password": "password123"})
+        assert res_demo.status_code == 200, f"Demo login failed for {demo_email}"
+        assert res_demo.json()["role"] == expected_role, f"Unexpected role for {demo_email}"
+    print("✓ Phase 1: All 3 Standard Demo Accounts Verified")
+
+    # Cross-Role Route Protection at FastAPI dependency level
+    # 1. Student trying to access industry route -> 403
+    res_cross1 = client.get("/api/v1/industry/company", headers=student_headers)
+    assert res_cross1.status_code == 403, f"Expected 403 for student accessing industry route, got {res_cross1.status_code}"
+    # 2. Industry trying to access student route -> 403
+    res_cross2 = client.get("/api/v1/students/dashboard-summary", headers=ind_headers)
+    assert res_cross2.status_code == 403, f"Expected 403 for industry accessing student route, got {res_cross2.status_code}"
+    # 3. Institution trying to access student jobs route -> 403
+    res_cross3 = client.get("/api/v1/jobs/recommended", headers=inst_headers)
+    assert res_cross3.status_code == 403, f"Expected 403 for institution accessing student route, got {res_cross3.status_code}"
+    print("✓ Phase 1: Route Protection Verified (Cross-role tokens strictly rejected with 403 Forbidden)")
     
     # 3. Phase 2: Core Services - Matching Engine & Job Aggregator
     res_jobs = client.get("/api/v1/jobs/recommended", headers=student_headers)
